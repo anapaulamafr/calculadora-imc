@@ -1,15 +1,17 @@
 package com.example.calculadoraimc
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.renderscript.ScriptGroup
 import android.widget.Toast
+import androidx.activity.viewModels
 import com.example.calculadoraimc.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityMainBinding
-    lateinit var viewModel: MainViewModel
+    val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,15 +23,20 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        val peso = binding.inputPeso.toString()
-        val altura = binding.inputAltura.toString()
+        val peso = binding.inputPeso.text
+        val altura = binding.inputAltura.text
 
         binding.buttonCalculateImc.setOnClickListener {
-            if (peso != "" && altura != "") {
-                val pesoDouble = peso.toDouble()
-                val alturaDouble = altura.toDouble()
-                val imc = viewModel.calcularImc(pesoDouble, alturaDouble)
-                Toast.makeText(applicationContext, "IMC: ${imc}", Toast.LENGTH_LONG).show()
+            if (peso.isNotEmpty() && altura.isNotEmpty()) {
+                val pesoDouble = peso.toString().toDouble()
+                val alturaDouble = altura.toString().toDouble()
+                val imc = String.format("%.2f", viewModel.calcularImc(pesoDouble, alturaDouble)).toDouble()
+                val classificacao = viewModel.retornarClassificacao(imc)
+                val intent = Intent(this, ResultadoImcActivity::class.java).apply {
+                    putExtra("IMC", imc.toString())
+                    putExtra("CLASSIFICACAO", classificacao)
+                }
+                startActivity(intent)
             }
             else {
                 Toast.makeText(applicationContext, "Inserir valores", Toast.LENGTH_LONG).show()
